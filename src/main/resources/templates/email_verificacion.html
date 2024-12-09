@@ -1,0 +1,18 @@
+<!-- src/main/resources/templates/email_verificacion.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Verificación de Cuenta</title>
+</head>
+<body>
+<h1>Verificación de Cuenta</h1>
+<p>Hola,</p>
+<p>Gracias por registrarte. Por favor, haz clic en el siguiente enlace para verificar tu cuenta:</p>
+<p><a th:href="${enlaceVerificacion}" target="_blank">Verificar Cuenta</a></p>
+<p>Si no puedes hacer clic en el enlace, copia y pega la siguiente URL en tu navegador:</p>
+<p th:text="${enlaceVerificacion}"></p>
+<p>Saludos,</p>
+<p>Equipo de Gestión de Torneos de Tenis</p>
+</body>
+</html>

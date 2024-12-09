@@ -1,0 +1,51 @@
+<!-- src/main/resources/templates/menu.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>Menú Inicial - Gestión de Torneos</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <!-- Font Awesome para los iconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  <style>
+    body {
+      background: url('https://source.unsplash.com/1600x900/?sports,tournament') no-repeat center center fixed;
+      background-size: cover;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      opacity: 0.95;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .btn-custom {
+      width: 200px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="card p-5 text-center">
+    <h1 class="mb-4">Bienvenido a Gestión de Torneos</h1>
+    <p class="mb-4">Seleccione una opción para continuar:</p>
+    <div>
+      <a href="/jugadores/login" class="btn btn-primary btn-custom">
+        <i class="fas fa-sign-in-alt mr-2"></i> Iniciar Sesión
+      </a>
+      <a href="/jugadores/register" class="btn btn-success btn-custom">
+        <i class="fas fa-user-plus mr-2"></i> Registrarse
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts de Bootstrap y Font Awesome -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</body>
+</html>

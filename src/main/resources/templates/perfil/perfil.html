@@ -1,0 +1,246 @@
+<!-- src/main/resources/templates/perfil.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Torneos de Tenis - Principal</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        body {
+            background: #f8f9fa;
+            margin:0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 250px;
+            background: #ffffff;
+            border-right: 1px solid #dee2e6;
+            padding-top: 20px;
+            overflow-y: auto;
+        }
+        .sidebar .brand {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        .sidebar .brand:hover {
+            text-decoration: underline;
+        }
+        .sidebar h4 {
+            margin: 20px 0 10px 20px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            color: #343a40;
+        }
+        .sidebar .nav-link {
+            display: block;
+            font-size: 0.95rem;
+            margin: 5px 0;
+            color: #333;
+            padding: 5px 20px;
+            text-decoration: none;
+        }
+        .sidebar .nav-link:hover {
+            background: #e9ecef;
+            border-radius: 4px;
+            color: #000;
+            text-decoration: none;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .sidebar .submenu {
+            padding-left: 30px;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 40px;
+            flex-grow: 1;
+        }
+        .welcome-message {
+            margin-bottom: 30px;
+        }
+        .welcome-message h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .welcome-message p {
+            font-size: 1.1rem;
+            color: #555;
+        }
+        .activity-summary {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .activity-summary ul {
+            list-style: none;
+            padding: 0;
+        }
+        .activity-summary li {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        /* Styles for the bottom links */
+        .sidebar .bottom-links {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            padding: 0 20px;
+        }
+        .sidebar .bottom-links a {
+            display: block;
+            font-size: 0.95rem;
+            margin: 5px 0;
+            color: #333;
+            padding: 5px 0;
+            text-decoration: none;
+        }
+        .sidebar .bottom-links a:hover {
+            background: #e9ecef;
+            border-radius: 4px;
+            color: #000;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Barra Lateral -->
+<div class="sidebar">
+    <a href="/main" class="brand">Gestión de Torneos de Tenis</a>
+
+    <!-- Enlaces Principales -->
+    <a href="/main" class="nav-link"><i class="fas fa-home"></i> Inicio</a>
+    <a href="/jugadores/estadisticas" class="nav-link"><i class="fas fa-chart-bar"></i> Estadísticas Personales</a>
+
+    <hr style="margin: 20px 0;">
+
+    <!-- Sección Torneos -->
+    <h4>🎾 Torneos</h4>
+    <a th:href="@{/torneos/disponibles}" class="nav-link submenu"><i class="fas fa-eye"></i> Torneos Disponibles</a>
+    <a th:href="@{/jugadores/mis-torneos}" class="nav-link submenu"><i class="fas fa-list-alt"></i> Mis Torneos y Partidos</a>
+
+    <hr style="margin: 20px 0;">
+
+    <!-- Sección Resultados -->
+    <h4>🏅 Resultados</h4>
+    <a th:href="@{/jugadores/mis-resultados}" class="nav-link submenu"><i class="fas fa-medal"></i> Resultados Obtenidos</a>
+    <a th:href="@{/ranking/global}" class="nav-link submenu"><i class="fas fa-list-ol"></i> Ranking Global</a>
+
+    <hr style="margin: 20px 0;">
+
+    <!-- Sección Administración (Solo para ADMIN) -->
+    <h4 sec:authorize="hasRole('ADMIN')">⚙️ Administración</h4>
+    <a th:href="@{/admin/torneos}" class="nav-link" sec:authorize="hasRole('ADMIN')"><i class="fas fa-cogs"></i> Gestión de Torneos</a>
+    <a th:href="@{/admin/emparejamientos/sin-resultados}" class="nav-link" sec:authorize="hasRole('ADMIN')"><i class="fas fa-edit"></i> Gestión de Resultados</a>
+
+    <!-- Enlaces de Pie de Página -->
+    <div class="bottom-links">
+        <a th:if="${#authorization.expression('isAuthenticated()')}" th:href="@{/jugadores/perfil}" class="nav-link">
+            <i class="fas fa-user"></i> Modificar Perfil (<span th:text="${jugador.nombreUsuario}">Usuario</span>)
+        </a>
+        <a th:if="${#authorization.expression('isAuthenticated()')}" th:href="@{/jugadores/logout}" class="nav-link">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+</div>
+
+<!-- Contenido Principal -->
+<div class="main-content">
+    <!-- Mensajes de Éxito y Error -->
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+        <span th:text="${errorMessage}"></span>
+    </div>
+    <div th:if="${successMessage}" class="alert alert-success" role="alert">
+        <span th:text="${successMessage}"></span>
+    </div>
+
+    <h3>Perfil del Jugador</h3>
+    <form th:action="@{/jugadores/perfil}" th:object="${jugador}" method="post">
+        <!-- Token CSRF -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+        <!-- Nombre (Solo Lectura) -->
+        <div class="form-group">
+            <label for="nombre">Nombre</label>
+            <input type="text" class="form-control" id="nombre" th:value="${jugador.nombre}" readonly>
+        </div>
+
+        <!-- Apellidos (Solo Lectura) -->
+        <div class="form-group">
+            <label for="apellidos">Apellidos</label>
+            <input type="text" class="form-control" id="apellidos" th:value="${jugador.apellidos}" readonly>
+        </div>
+
+        <!-- E-mail (Solo Lectura) -->
+        <div class="form-group">
+            <label for="correoElectronico">E-mail</label>
+            <input type="email" class="form-control" id="correoElectronico" th:value="${jugador.correoElectronico}" readonly>
+        </div>
+
+
+        <!-- Nombre de Usuario (Editable) -->
+        <div class="form-group">
+            <label for="nombreUsuario">Nombre de Usuario</label>
+            <input type="text" class="form-control" id="nombreUsuario" th:field="*{nombreUsuario}" placeholder="Ingrese su nombre de usuario" required>
+            <div th:if="${#fields.hasErrors('nombreUsuario')}" class="text-danger">
+                <p th:errors="*{nombreUsuario}">Nombre de Usuario Error</p>
+            </div>
+        </div>
+
+        <!-- Contraseña (Editable) -->
+        <div class="form-group">
+            <label for="contrasena">Nueva Contraseña (Opcional)</label>
+            <input type="password" class="form-control" id="contrasena" th:field="*{contrasena}" placeholder="Ingrese una nueva contraseña">
+            <small class="form-text text-muted">Deja este campo en blanco si no deseas cambiar tu contraseña.</small>
+            <div th:if="${#fields.hasErrors('contrasena')}" class="text-danger">
+                <p th:errors="*{contrasena}">Contraseña Error</p>
+            </div>
+        </div>
+
+        <!-- Teléfono (Editable) -->
+        <div class="form-group">
+            <label for="telefono">Teléfono</label>
+            <input type="text" class="form-control" id="telefono" th:field="*{telefono}" placeholder="Ingrese su número de teléfono" required>
+            <div th:if="${#fields.hasErrors('telefono')}" class="text-danger">
+                <p th:errors="*{telefono}">Teléfono Error</p>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-custom">
+            <i class="fas fa-save mr-2"></i> Guardar Cambios
+        </button>
+    </form>
+
+    <hr>
+
+    <div class="mt-3">
+        <a th:href="@{/main}" class="btn btn-secondary"><i class="fas fa-arrow-left mr-2"></i> Volver al Inicio</a>
+    </div>
+</div>
+
+<!-- Scripts de Bootstrap y Font Awesome -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</body>
+</html>

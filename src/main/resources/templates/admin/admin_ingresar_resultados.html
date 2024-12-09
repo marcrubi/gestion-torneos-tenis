@@ -1,0 +1,219 @@
+<!-- src/main/resources/templates/admin_ingresar_resultados.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Ingresar Resultados - Admin</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        body {
+            background: #f8f9fa;
+            margin:0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 250px;
+            background: #ffffff;
+            border-right: 1px solid #dee2e6;
+            padding-top: 20px;
+            overflow-y: auto;
+        }
+        .sidebar .brand {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        .sidebar .brand:hover {
+            text-decoration: underline;
+        }
+        .sidebar h4 {
+            margin: 20px 0 10px 20px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            color: #343a40;
+        }
+        .sidebar .nav-link {
+            display: block;
+            font-size: 0.95rem;
+            margin: 5px 0;
+            color: #333;
+            padding: 5px 20px;
+            text-decoration: none;
+        }
+        .sidebar .nav-link:hover {
+            background: #e9ecef;
+            border-radius: 4px;
+            color: #000;
+            text-decoration: none;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .sidebar .submenu {
+            padding-left: 30px;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 40px;
+            flex-grow: 1;
+        }
+        .match-card {
+            margin-bottom: 20px;
+        }
+        .set-inputs input {
+            width: 80px;
+        }
+
+        /* Styles for the bottom links */
+        .sidebar .bottom-links {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            padding: 0 20px;
+        }
+        .sidebar .bottom-links a {
+            display: block;
+            font-size: 0.95rem;
+            margin: 5px 0;
+            color: #333;
+            padding: 5px 0;
+            text-decoration: none;
+        }
+        .sidebar .bottom-links a:hover {
+            background: #e9ecef;
+            border-radius: 4px;
+            color: #000;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Barra Lateral -->
+<div class="sidebar">
+    <a href="/main" class="brand">Gestión de Torneos de Tenis</a>
+
+    <!-- Enlaces Principales -->
+    <h4>Perfil</h4>
+    <a th:href="@{/jugadores/perfil}" class="nav-link"><i class="fas fa-user-cog"></i> Modificar Perfil</a>
+    <a th:href="@{/jugadores/estadisticas}" class="nav-link"><i class="fas fa-chart-bar"></i> Estadísticas Personales</a>
+
+    <h4>🎾 Torneos</h4>
+    <a th:href="@{/torneos/disponibles}" class="nav-link submenu"><i class="fas fa-eye"></i> Torneos Disponibles</a>
+    <a th:href="@{/jugadores/mis-torneos}" class="nav-link submenu"><i class="fas fa-list-alt"></i> Mis Torneos y Partidos</a>
+
+    <h4>🏅 Resultados</h4>
+    <a th:href="@{/jugadores/mis-resultados}" class="nav-link submenu"><i class="fas fa-medal"></i> Resultados y Puntos Obtenidos</a>
+    <a th:href="@{/ranking/global}" class="nav-link submenu"><i class="fas fa-list-ol"></i> Ranking Global</a>
+
+    <h4 sec:authorize="hasRole('ADMIN')">⚙️ Administración</h4>
+    <a th:href="@{/admin/torneos}" class="nav-link" sec:authorize="hasRole('ADMIN')">
+        <i class="fas fa-cogs"></i> Gestión de Torneos
+    </a>
+    <a th:href="@{/admin/emparejamientos/sin-resultados}" class="nav-link" sec:authorize="hasRole('ADMIN')">
+        <i class="fas fa-edit"></i> Gestión de Resultados
+    </a>
+
+    <div class="bottom-links">
+        <a th:if="${#authorization.expression('isAuthenticated()')}"
+           th:href="@{/jugadores/perfil}" class="nav-link">
+            <i class="fas fa-user"></i> Modificar Perfil (
+            <span th:text="${(jugador != null) ? jugador.nombreUsuario : 'Perfil'}">Perfil</span>
+            )
+        </a>
+        <a th:if="${#authorization.expression('isAuthenticated()')}"
+           th:href="@{/jugadores/logout}" class="nav-link">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+</div>
+
+<!-- Contenido Principal -->
+<div class="main-content">
+    <h2 class="text-center">Ingresar Resultados para el Emparejamiento</h2>
+
+    <!-- Mensajes de Éxito y Error -->
+    <div th:if="${successMessage}" class="alert alert-success" role="alert">
+        <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <form th:action="@{/admin/emparejamientos/{id}/ingresar-resultados(id=${emparejamiento.id})}" method="post">
+        <!-- Incluir el token CSRF -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+        <div class="card match-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    Torneo: <span th:text="${emparejamiento.torneo.nombreTorneo}">Torneo X</span> |
+                    Ronda: <span th:text="${emparejamiento.numeroRonda}">1</span>
+                </h5>
+                <p>
+                    <strong>Jugador 1:</strong> <span th:text="${emparejamiento.jugador1.nombreUsuario}">J1</span> vs
+                    <strong>Jugador 2:</strong> <span th:text="${emparejamiento.jugador2 != null ? emparejamiento.jugador2.nombreUsuario : 'BYE'}">J2</span>
+                </p>
+
+                <div class="set-inputs">
+                    <h6>Set 1:</h6>
+                    <div class="form-inline">
+                        <label class="mr-2">Jugador 1:</label>
+                        <input type="number" name="set1Jugador1Score" class="form-control mr-4" min="0" max="7" required />
+                        <label class="mr-2">Jugador 2:</label>
+                        <input type="number" name="set1Jugador2Score" class="form-control" min="0" max="7" required />
+                    </div>
+                </div>
+
+                <div class="set-inputs">
+                    <h6>Set 2:</h6>
+                    <div class="form-inline">
+                        <label class="mr-2">Jugador 1:</label>
+                        <input type="number" name="set2Jugador1Score" class="form-control mr-4" min="0" max="7" required />
+                        <label class="mr-2">Jugador 2:</label>
+                        <input type="number" name="set2Jugador2Score" class="form-control" min="0" max="7" required />
+                    </div>
+                </div>
+
+                <div class="set-inputs" th:if="${emparejamiento.jugador2 != null}">
+                    <h6>Set 3 (Opcional):</h6>
+                    <div class="form-inline">
+                        <label class="mr-2">Jugador 1:</label>
+                        <input type="number" name="set3Jugador1Score" class="form-control mr-4" min="0" max="7" />
+                        <label class="mr-2">Jugador 2:</label>
+                        <input type="number" name="set3Jugador2Score" class="form-control" min="0" max="7" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-block">
+            <i class="fas fa-check mr-2"></i> Guardar Resultados
+        </button>
+        <a th:href="@{/admin/emparejamientos/sin-resultados}" class="btn btn-secondary btn-block mt-2">
+            <i class="fas fa-arrow-left mr-2"></i> Volver a Emparejamientos
+        </a>
+    </form>
+</div>
+
+<!-- Scripts de Bootstrap y Font Awesome -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</body>
+</html>

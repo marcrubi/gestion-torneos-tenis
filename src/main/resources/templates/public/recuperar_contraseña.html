@@ -1,0 +1,74 @@
+<!-- src/main/resources/templates/recuperar_contraseña.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Recuperar Contraseña - Gestión de Torneos</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <!-- Font Awesome para los iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        body {
+            background: #f8f9fa;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 500px;
+            margin: 50px auto;
+        }
+        .btn-custom {
+            width: 100%;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card mx-auto">
+    <h3 class="mb-4 text-center">Recuperar Contraseña</h3>
+    <form th:action="@{/jugadores/recuperar}" th:object="${passwordResetRequest}" method="post">
+        <!-- Incluir Token CSRF -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+        <!-- Correo Electrónico -->
+        <div class="form-group">
+            <label for="correoElectronico">Correo Electrónico</label>
+            <input type="email" class="form-control" id="correoElectronico" th:field="*{correoElectronico}" placeholder="Ingrese su correo electrónico" required>
+            <div th:if="${#fields.hasErrors('correoElectronico')}" class="text-danger">
+                <p th:errors="*{correoElectronico}">Correo Electrónico Error</p>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-warning btn-custom">
+            <i class="fas fa-envelope mr-2"></i> Enviar Nueva Contraseña
+        </button>
+    </form>
+    <hr>
+    <div class="text-center">
+        <a th:href="@{/jugadores/login}">Volver al Inicio de Sesión</a>
+    </div>
+
+    <!-- Mensajes de Error y Éxito -->
+    <div th:if="${errorMessage}" class="alert alert-danger mt-3" role="alert">
+        <span th:text="${errorMessage}"></span>
+    </div>
+    <div th:if="${successMessage}" class="alert alert-success mt-3" role="alert">
+        <span th:text="${successMessage}"></span>
+    </div>
+</div>
+
+<div class="text-center btn-large-spacing">
+    <a href="/templates/public" class="btn btn-secondary btn-lg">
+        <i class="fas fa-arrow-left mr-2"></i> Volver al Menú Principal
+    </a>
+</div>
+
+<!-- Scripts de Bootstrap y Font Awesome -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</body>
+</html>

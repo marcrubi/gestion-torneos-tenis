@@ -1,0 +1,119 @@
+<!-- src/main/resources/templates/register.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrarse - Gestión de Torneos</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <!-- Font Awesome para los iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        body {
+            background: #f8f9fa;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 600px;
+            margin: 50px auto;
+        }
+        .btn-custom {
+            width: 100%;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card mx-auto">
+    <h3 class="mb-4 text-center">Registrarse</h3>
+
+    <!-- Mensajes de Error y Éxito (mover al inicio) -->
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+        <span th:text="${errorMessage}"></span>
+    </div>
+    <div th:if="${successMessage}" class="alert alert-success" role="alert">
+        <span th:text="${successMessage}"></span>
+    </div>
+
+    <form th:action="@{/jugadores/register}" th:object="${jugador}" method="post">
+        <!-- Incluir Token CSRF -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+        <!-- Nombre -->
+        <div class="form-group">
+            <label for="nombre">Nombre</label>
+            <input type="text" class="form-control" id="nombre" th:field="*{nombre}" placeholder="Ingrese su nombre" required>
+            <div th:if="${#fields.hasErrors('nombre')}" class="text-danger">
+                <p th:errors="*{nombre}">Nombre Error</p>
+            </div>
+        </div>
+
+        <!-- Apellidos -->
+        <div class="form-group">
+            <label for="apellidos">Apellidos</label>
+            <input type="text" class="form-control" id="apellidos" th:field="*{apellidos}" placeholder="Ingrese sus apellidos" required>
+            <div th:if="${#fields.hasErrors('apellidos')}" class="text-danger">
+                <p th:errors="*{apellidos}">Apellidos Error</p>
+            </div>
+        </div>
+
+        <!-- Teléfono -->
+        <div class="form-group">
+            <label for="telefono">Teléfono</label>
+            <input type="text" class="form-control" id="telefono" th:field="*{telefono}" placeholder="Ingrese su número de teléfono" required>
+            <div th:if="${#fields.hasErrors('telefono')}" class="text-danger">
+                <p th:errors="*{telefono}">Teléfono Error</p>
+            </div>
+        </div>
+
+        <!-- Correo Electrónico -->
+        <div class="form-group">
+            <label for="correoElectronico">Correo Electrónico</label>
+            <input type="email" class="form-control" id="correoElectronico" th:field="*{correoElectronico}" placeholder="Ingrese su correo electrónico" required>
+            <div th:if="${#fields.hasErrors('correoElectronico')}" class="text-danger">
+                <p th:errors="*{correoElectronico}">Correo Electrónico Error</p>
+            </div>
+        </div>
+
+        <!-- Nombre de Usuario -->
+        <div class="form-group">
+            <label for="nombreUsuario">Nombre de Usuario</label>
+            <input type="text" class="form-control" id="nombreUsuario" th:field="*{nombreUsuario}" placeholder="Ingrese su nombre de usuario" required>
+            <div th:if="${#fields.hasErrors('nombreUsuario')}" class="text-danger">
+                <p th:errors="*{nombreUsuario}">Nombre de Usuario Error</p>
+            </div>
+        </div>
+
+        <!-- Contraseña -->
+        <div class="form-group">
+            <label for="contrasena">Contraseña</label>
+            <input type="password" class="form-control" id="contrasena" th:field="*{contrasena}" placeholder="Ingrese su contraseña" required>
+            <div th:if="${#fields.hasErrors('contrasena')}" class="text-danger">
+                <p th:errors="*{contrasena}">Contraseña Error</p>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-custom">
+            <i class="fas fa-user-plus mr-2"></i> Registrarse
+        </button>
+    </form>
+    <hr>
+    <div class="text-center">
+        <a href="/jugadores/login">¿Ya tienes una cuenta? Iniciar Sesión</a>
+    </div>
+
+    <div class="text-center btn-large-spacing">
+        <a href="/templates/public" class="btn btn-secondary btn-lg">
+            <i class="fas fa-arrow-left mr-2"></i> Volver al Menú Principal
+        </a>
+    </div>
+</div>
+    <!-- Scripts de Bootstrap y Font Awesome -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</body>
+</html>

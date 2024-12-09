@@ -1,0 +1,17 @@
+<!-- src/main/resources/templates/email_recuperacion_contrasena.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Recuperación de Contraseña</title>
+</head>
+<body>
+<h1>Recuperación de Contraseña</h1>
+<p>Hola,</p>
+<p>Se ha solicitado una nueva contraseña para tu cuenta en Gestión de Torneos de Tenis.</p>
+<p>Tu nueva contraseña es: <strong th:text="${nuevaContrasena}"></strong></p>
+<p>Por favor, inicia sesión y cambia tu contraseña por una que recuerdes fácilmente.</p>
+<p>Saludos,</p>
+<p>Equipo de Gestión de Torneos de Tenis</p>
+</body>
+</html>

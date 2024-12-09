@@ -1,0 +1,39 @@
+# ConfiguraciÃ³n de la base de datos PostgreSQL
+spring.datasource.url=jdbc:postgresql://localhost:5432/tu_base_datos
+spring.datasource.username=tu_usuario
+spring.datasource.password=tu_contrasena
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# Configuracion basica de SMTP para Gmail
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=tu_correo
+spring.mail.password=tu_contrasena_aplicacion
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+spring.mail.properties.mail.smtp.connectiontimeout=5000
+spring.mail.properties.mail.smtp.timeout=3000
+spring.mail.properties.mail.smtp.writetimeout=5000
+
+
+# URL de la aplicaciÃ³n (para generaciÃ³n de enlaces en correos)
+spring.application.url=http://localhost:8080
+spring.main.allow-bean-definition-overriding=true
+app.url=http://localhost:8080
+
+
+# ConfiguraciÃ³n de seguridad
+spring.security.user.name=tu_usuario
+spring.security.user.password=tu_contrasena
+spring.security.user.roles=ADMIN
+
+
+# ConfiguraciÃ³n de Thymeleaf
+spring.thymeleaf.cache=false
+logging.level.com.ISII.gestion_torneos_tenis.service.JugadorService=DEBUG
+logging.level.org.springframework.security=DEBUG
+
