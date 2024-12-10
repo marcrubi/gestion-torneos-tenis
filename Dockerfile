@@ -9,4 +9,4 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 COPY --from=build /app/target/gestion-torneos-tenis-1.0.0.jar app.jar
 EXPOSE 8080
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "java -jar app.jar --server.port=${PORT}"]
