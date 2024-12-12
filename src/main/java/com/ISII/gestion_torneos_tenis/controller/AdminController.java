@@ -42,14 +42,13 @@ public class AdminController {
     private ResultadoService resultadoService;
 
     @Autowired
-    private JugadorService jugadorService;
-
-    @Autowired
     private TorneoService torneoService;
 
     @Autowired
     private EmparejamientoService emparejamientoService;
 
+    @Autowired
+    private EstadisticasService estadisticasService;
 
 
     @GetMapping("/torneos")
@@ -74,6 +73,9 @@ public class AdminController {
 
         // Obtener el ranking global ordenado
         Map<Long, Integer> rankingJugadores = rankingService.obtenerRankingGlobal();
+        Map<Long, Integer> setsGanadosMap = new HashMap<>();
+        Map<Long, Integer> juegosGanadosMap = new HashMap<>();
+        Map<Long, Integer> juegosPerdidosMap = new HashMap<>();
 
         // Ordenar las inscripciones por puntos del jugador descendente (mayor a menor)
         inscripcionesInscritas.sort((ins1, ins2) -> {
@@ -82,9 +84,21 @@ public class AdminController {
             return puntos2.compareTo(puntos1); // Orden descendente
         });
 
+        for (Inscripcion inscripcion : inscripcionesInscritas) {
+            Long jugadorId = inscripcion.getJugador().getId();
+            EstadisticasService.EstadisticasJugador estadisticas = estadisticasService.calcularEstadisticas(jugadorId);
+            setsGanadosMap.put(jugadorId, estadisticas.getSetsGanados());
+            juegosGanadosMap.put(jugadorId, estadisticas.getJuegosGanados());
+            juegosPerdidosMap.put(jugadorId, estadisticas.getJuegosPerdidos());
+        }
+
         model.addAttribute("torneo", torneo);
         model.addAttribute("jugadoresInscritos", inscripcionesInscritas);
         model.addAttribute("rankingJugadores", rankingJugadores);
+        model.addAttribute("setsGanadosMap", setsGanadosMap);
+        model.addAttribute("juegosGanadosMap", juegosGanadosMap);
+        model.addAttribute("juegosPerdidosMap", juegosPerdidosMap);
+
 
         return "admin/admin_seleccionar_jugadores";
     }
@@ -179,143 +193,41 @@ public class AdminController {
     }
 
 
-        @PostMapping("/emparejamientos/{emparejamientoId}/ingresar-resultados")
-        @Transactional
-        public String ingresarResultados(@PathVariable("emparejamientoId") Long emparejamientoId,
-                                         @ModelAttribute Resultado resultadoForm,
-                                         RedirectAttributes redirectAttributes) {
+    @PostMapping("/emparejamientos/{emparejamientoId}/ingresar-resultados")
+    @Transactional
+    public String ingresarResultados(@PathVariable("emparejamientoId") Long emparejamientoId,
+                                     @ModelAttribute Resultado resultadoForm,
+                                     RedirectAttributes redirectAttributes) {
 
-            System.out.println("ingresarResultados: Intentando ingresar resultados para emparejamiento ID " + emparejamientoId);
+        System.out.println("ingresarResultados: Intentando ingresar resultados para emparejamiento ID " + emparejamientoId);
 
-            Emparejamiento emparejamiento = emparejamientoRepository.findById(emparejamientoId)
-                    .orElseThrow(() -> new IllegalArgumentException("Emparejamiento no encontrado con ID: " + emparejamientoId));
+        Emparejamiento emparejamiento = emparejamientoRepository.findById(emparejamientoId)
+                .orElseThrow(() -> new IllegalArgumentException("Emparejamiento no encontrado con ID: " + emparejamientoId));
 
-            // Verificar que no haya resultado ya
-            if (!emparejamiento.getResultados().isEmpty()) {
-                System.out.println("ingresarResultados: Ya existe un resultado para el emparejamiento ID " + emparejamientoId);
-                redirectAttributes.addFlashAttribute("errorMessage", "Ya existe un resultado para este emparejamiento.");
-                return "redirect:/admin/emparejamientos/sin-resultados";
-            }
-
-            // Validar sets con lógica de tenis
-            if (!validarSetsTenis(resultadoForm)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Los resultados de los sets no son válidos para un partido de tenis.");
-                return "redirect:/admin/emparejamientos/" + emparejamientoId + "/ingresar-resultados";
-            }
-
-            // Calcular sets ganados
-            int setsGanadosJugador1 = 0;
-            int setsGanadosJugador2 = 0;
-
-            Integer s1j1 = resultadoForm.getSet1Jugador1Score();
-            Integer s1j2 = resultadoForm.getSet1Jugador2Score();
-            if (s1j1 != null && s1j2 != null) {
-                if (s1j1 > s1j2) setsGanadosJugador1++; else setsGanadosJugador2++;
-            }
-
-            Integer s2j1 = resultadoForm.getSet2Jugador1Score();
-            Integer s2j2 = resultadoForm.getSet2Jugador2Score();
-            if (s2j1 != null && s2j2 != null) {
-                if (s2j1 > s2j2) setsGanadosJugador1++; else setsGanadosJugador2++;
-            }
-
-            Integer s3j1 = resultadoForm.getSet3Jugador1Score();
-            Integer s3j2 = resultadoForm.getSet3Jugador2Score();
-            if (s3j1 != null && s3j2 != null) {
-                if (s3j1 > s3j2) setsGanadosJugador1++; else setsGanadosJugador2++;
-            }
-
-            // Determinar ganador
-            Jugador ganador;
-            if (setsGanadosJugador1 > setsGanadosJugador2) {
-                ganador = emparejamiento.getJugador1();
-            } else if (setsGanadosJugador2 > setsGanadosJugador1) {
-                ganador = emparejamiento.getJugador2();
-            } else {
-                System.out.println("ingresarResultados: Resultado inconsistente para emparejamiento ID " + emparejamientoId);
-                redirectAttributes.addFlashAttribute("errorMessage", "El resultado de los sets es inconsistente o empate.");
-                return "redirect:/admin/emparejamientos/sin-resultados";
-            }
-
-            // Calcular juegos ganados totales
-            int juegosGanadosJugador1 = 0;
-            int juegosGanadosJugador2 = 0;
-            if (s1j1 != null && s1j2 != null) {
-                juegosGanadosJugador1 += s1j1;
-                juegosGanadosJugador2 += s1j2;
-            }
-            if (s2j1 != null && s2j2 != null) {
-                juegosGanadosJugador1 += s2j1;
-                juegosGanadosJugador2 += s2j2;
-            }
-            if (s3j1 != null && s3j2 != null) {
-                juegosGanadosJugador1 += s3j1;
-                juegosGanadosJugador2 += s3j2;
-            }
-
-            // Crear y guardar resultado
-            Resultado resultado = new Resultado();
-            resultado.setEmparejamiento(emparejamiento);
-            resultado.setSet1Jugador1Score(s1j1);
-            resultado.setSet1Jugador2Score(s1j2);
-            resultado.setSet2Jugador1Score(s2j1);
-            resultado.setSet2Jugador2Score(s2j2);
-            resultado.setSet3Jugador1Score(s3j1);
-            resultado.setSet3Jugador2Score(s3j2);
-            resultado.setGanador(ganador);
-            resultado.setJuegosGanadosJugador1(juegosGanadosJugador1);
-            resultado.setJuegosGanadosJugador2(juegosGanadosJugador2);
-
-            resultadoRepository.save(resultado);
-            System.out.println("ingresarResultados: Resultado guardado para emparejamiento ID " + emparejamientoId + ", Ganador: " + ganador.getNombreUsuario());
-
-            // **Eliminar la asignación de puntos aquí**
-            // jugadorService.actualizarPuntos(ganador.getId(), emparejamiento.getTorneo().getPuntosAsignados());
-            // System.out.println("ingresarResultados: Puntos actualizados para el ganador ID " + ganador.getId());
-
-            // Verificar si todos los emparejamientos de la ronda actual tienen resultados
-            int rondaActual = emparejamiento.getNumeroRonda();
-            Long torneoId = emparejamiento.getTorneo().getId();
-            List<Emparejamiento> emparejamientosRondaActual = emparejamientoRepository.findByTorneo_IdAndNumeroRonda(torneoId, rondaActual);
-
-            long countConResultados = emparejamientosRondaActual.stream().filter(emp -> !emp.getResultados().isEmpty()).count();
-            System.out.println("ingresarResultados: Emparejamientos con resultados: " + countConResultados + " de " + emparejamientosRondaActual.size());
-
-            boolean todosTienenResultado = emparejamientosRondaActual.stream()
-                    .allMatch(emp -> emp.getResultados() != null && !emp.getResultados().isEmpty());
-
-            System.out.println("ingresarResultados: ¿Todos los emparejamientos tienen resultados? " + todosTienenResultado);
-
-            if (todosTienenResultado) {
-                // Todos los resultados están, intentar generar siguiente ronda
-                int siguienteRonda = rondaActual + 1;
-                System.out.println("ingresarResultados: Todos los emparejamientos tienen resultados. Generando emparejamientos para la ronda " + siguienteRonda);
-                ResponseEntity<String> response = emparejamientoService.generarEmparejamientos(torneoId, siguienteRonda);
-                System.out.println("ingresarResultados: Respuesta generación ronda " + siguienteRonda + ": " + response.getBody());
-
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    redirectAttributes.addFlashAttribute("successMessage", "Resultados ingresados y siguiente ronda generada exitosamente.");
-                } else {
-                    String msg = response.getBody();
-                    if (msg != null && msg.contains("No hay suficientes jugadores")) {
-                        // Finalizar torneo
-                        torneoService.chequearYFinalizarTorneoSiCorresponde(torneoId);
-                        redirectAttributes.addFlashAttribute("successMessage", "Resultados ingresados. El torneo ha finalizado.");
-                    } else {
-                        redirectAttributes.addFlashAttribute("errorMessage", response.getBody());
-                    }
-                }
-            } else {
-                // Aún faltan resultados
-                redirectAttributes.addFlashAttribute("successMessage", "Resultados ingresados exitosamente. Aún faltan resultados de otros partidos antes de generar la siguiente ronda.");
-            }
-
-            // Por si acaso, chequear si el torneo puede finalizar aquí también
-            torneoService.chequearYFinalizarTorneoSiCorresponde(torneoId);
-
+        // Verificar que no haya resultado ya
+        if (!emparejamiento.getResultados().isEmpty()) {
+            System.out.println("ingresarResultados: Ya existe un resultado para el emparejamiento ID " + emparejamientoId);
+            redirectAttributes.addFlashAttribute("errorMessage", "Ya existe un resultado para este emparejamiento.");
             return "redirect:/admin/emparejamientos/sin-resultados";
         }
 
+    // Validar sets con lógica de tenis
+        if (!validarSetsTenis(resultadoForm)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Los resultados de los sets no son válidos para un partido de tenis.");
+            return "redirect:/admin/emparejamientos/" + emparejamientoId + "/ingresar-resultados";
+        }
+
+
+        // Guardar el resultado manualmente
+        ResponseEntity<String> response = resultadoService.guardarResultadoManual(emparejamientoId, resultadoForm);
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            redirectAttributes.addFlashAttribute("errorMessage", response.getBody());
+            return "redirect:/admin/emparejamientos/" + emparejamientoId + "/ingresar-resultados";
+        }
+
+        redirectAttributes.addFlashAttribute("successMessage", "Resultados ingresados exitosamente.");
+        return "redirect:/admin/emparejamientos/sin-resultados";
+    }
 
 
     // Método privado para validar resultados de sets de tenis
@@ -323,8 +235,8 @@ public class AdminController {
     // - Un jugador tiene >=6 juegos y diferencia de 2 con el otro (6-4, 6-2, etc.)
     // - Si se llega a 6-5, se debe llegar a 7-5 o 7-6.
     // - 7-5 y 7-6 son válidos. No se aceptan >7.
-    private boolean validarSet(Integer gamesJ1, Integer gamesJ2) {
-        if (gamesJ1 == null || gamesJ2 == null) return true;
+    public boolean validarSet(Integer gamesJ1, Integer gamesJ2) {
+        if (gamesJ1 == null || gamesJ2 == null) return false;
         int max = Math.max(gamesJ1, gamesJ2);
         int min = Math.min(gamesJ1, gamesJ2);
 
@@ -344,15 +256,38 @@ public class AdminController {
     }
 
     private boolean validarSetsTenis(Resultado resultadoForm) {
-        if (!validarSet(resultadoForm.getSet1Jugador1Score(), resultadoForm.getSet1Jugador2Score())) return false;
-        if (!validarSet(resultadoForm.getSet2Jugador1Score(), resultadoForm.getSet2Jugador2Score())) return false;
+        // Valida el primer set
+        if (!validarSet(resultadoForm.getSet1Jugador1Score(), resultadoForm.getSet1Jugador2Score())) {
+            return false;
+        }
 
-        Integer s3j1 = resultadoForm.getSet3Jugador1Score();
-        Integer s3j2 = resultadoForm.getSet3Jugador2Score();
-        if ((s3j1 != null && s3j2 != null) && (!validarSet(s3j1, s3j2))) return false;
+        // Valida el segundo set
+        if (!validarSet(resultadoForm.getSet2Jugador1Score(), resultadoForm.getSet2Jugador2Score())) {
+            return false;
+        }
 
+        if(!validarSet(resultadoForm.getSet3Jugador1Score(), resultadoForm.getSet3Jugador2Score())){
+            return false;
+        }
+
+        // Valida el cuarto set (si existe)
+        Integer s4j1 = resultadoForm.getSet4Jugador1Score();
+        Integer s4j2 = resultadoForm.getSet4Jugador2Score();
+        if (s4j1 != null && s4j2 != null && !validarSet(s4j1, s4j2)) {
+            return false;
+        }
+
+        // Valida el quinto set (si existe)
+        Integer s5j1 = resultadoForm.getSet5Jugador1Score();
+        Integer s5j2 = resultadoForm.getSet5Jugador2Score();
+        if (s5j1 != null && s5j2 != null && !validarSet(s5j1, s5j2)) {
+            return false;
+        }
+
+        // Si todos los sets son válidos
         return true;
     }
+
 
     @GetMapping("/torneos/{torneoId}/ronda/{ronda}/emparejamientos")
     public String mostrarEmparejamientos(@PathVariable("torneoId") Long torneoId,
@@ -403,6 +338,10 @@ public class AdminController {
             tempRes.setSet2Jugador2Score(match.getSet2Jugador2Score());
             tempRes.setSet3Jugador1Score(match.getSet3Jugador1Score());
             tempRes.setSet3Jugador2Score(match.getSet3Jugador2Score());
+            tempRes.setSet4Jugador1Score(match.getSet4Jugador1Score());
+            tempRes.setSet4Jugador2Score(match.getSet4Jugador2Score());
+            tempRes.setSet5Jugador1Score(match.getSet5Jugador1Score());
+            tempRes.setSet5Jugador2Score(match.getSet5Jugador2Score());
 
             if (!validarSetsTenis(tempRes)) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Uno o más emparejamientos tienen sets inválidos para tenis.");
@@ -455,6 +394,44 @@ public class AdminController {
         return "redirect:/admin/emparejamientos/sin-resultados";
     }
 
+
+    @PostMapping("/torneos/{id}/seleccionar-jugadores/automatico")
+    public String seleccionarJugadoresAutomaticamente(@PathVariable("id") Long torneoId, RedirectAttributes redirectAttributes) {
+        Optional<Torneo> torneoOpt = torneoRepository.findById(torneoId);
+        if (torneoOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Torneo no encontrado.");
+            return "redirect:/admin/torneos";
+        }
+
+        Torneo torneo = torneoOpt.get();
+        List<Inscripcion> inscripcionesInscritas = inscripcionRepository.findByTorneo(torneo).stream()
+                .filter(ins -> "Inscrito".equalsIgnoreCase(ins.getEstadoInscripcion()))
+                .collect(Collectors.toList());
+
+        Map<Long, Integer> rankingJugadores = rankingService.obtenerRankingGlobal();
+
+        // Ordenar inscripciones por puntos y aplicar desempate
+        inscripcionesInscritas.sort((ins1, ins2) -> {
+            Integer puntos1 = rankingJugadores.getOrDefault(ins1.getJugador().getId(), 0);
+            Integer puntos2 = rankingJugadores.getOrDefault(ins2.getJugador().getId(), 0);
+            return puntos2.compareTo(puntos1);
+        });
+
+        // Seleccionar automáticamente hasta 16 jugadores
+        List<Long> jugadoresSeleccionadosIds = inscripcionesInscritas.stream()
+                .limit(16)
+                .map(ins -> ins.getJugador().getId())
+                .collect(Collectors.toList());
+
+        // Añadir los IDs seleccionados al modelo usando Flash Attributes
+        redirectAttributes.addFlashAttribute("jugadoresSeleccionadosIds", jugadoresSeleccionadosIds);
+        redirectAttributes.addFlashAttribute("successMessage", "Jugadores seleccionados automáticamente. Revise y confirme.");
+
+        return "redirect:/admin/torneos/" + torneoId + "/seleccionar-jugadores";
+    }
+
+
+
     public static class ResultadosForm {
         private List<ResultadoMatch> matches;
 
@@ -474,6 +451,12 @@ public class AdminController {
             private Integer set2Jugador2Score;
             private Integer set3Jugador1Score;
             private Integer set3Jugador2Score;
+            private Integer set4Jugador1Score; // Nuevo
+            private Integer set4Jugador2Score; // Nuevo
+            private Integer set5Jugador1Score; // Nuevo
+            private Integer set5Jugador2Score; // Nuevo
+
+            // Getters y Setters para los nuevos campos
 
             public Long getEmparejamientoId() {
                 return emparejamientoId;
@@ -529,6 +512,38 @@ public class AdminController {
 
             public void setSet3Jugador2Score(Integer set3Jugador2Score) {
                 this.set3Jugador2Score = set3Jugador2Score;
+            }
+
+            public Integer getSet4Jugador1Score() {
+                return set4Jugador1Score;
+            }
+
+            public void setSet4Jugador1Score(Integer set4Jugador1Score) {
+                this.set4Jugador1Score = set4Jugador1Score;
+            }
+
+            public Integer getSet4Jugador2Score() {
+                return set4Jugador2Score;
+            }
+
+            public void setSet4Jugador2Score(Integer set4Jugador2Score) {
+                this.set4Jugador2Score = set4Jugador2Score;
+            }
+
+            public Integer getSet5Jugador1Score() {
+                return set5Jugador1Score;
+            }
+
+            public void setSet5Jugador1Score(Integer set5Jugador1Score) {
+                this.set5Jugador1Score = set5Jugador1Score;
+            }
+
+            public Integer getSet5Jugador2Score() {
+                return set5Jugador2Score;
+            }
+
+            public void setSet5Jugador2Score(Integer set5Jugador2Score) {
+                this.set5Jugador2Score = set5Jugador2Score;
             }
         }
     }

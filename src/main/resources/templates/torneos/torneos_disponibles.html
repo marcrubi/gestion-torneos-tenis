@@ -160,7 +160,6 @@
             <th>Fecha de Inicio</th>
             <th>Fecha de Fin</th>
             <th>Máximo de Jugadores</th>
-            <th>Puntos Asignados</th>
             <th>Acciones</th>
         </tr>
         </thead>
@@ -171,7 +170,6 @@
             <td th:text="${#temporals.format(torneo.fechaInicio, 'dd/MM/yyyy')}">01/12/2024</td>
             <td th:text="${#temporals.format(torneo.fechaFin, 'dd/MM/yyyy')}">31/12/2024</td>
             <td th:text="${torneo.numeroMaxJugadores}">16</td>
-            <td th:text="${torneo.puntosAsignados}">500</td>
             <td>
                 <form th:if="!${torneosInscritos.contains(torneo.id)}" th:action="@{/torneos/{id}/inscribir(id=${torneo.id})}" method="post">
                     <!-- Token CSRF -->
@@ -192,12 +190,6 @@
         </tr>
         </tbody>
     </table>
-
-    <div class="text-left mt-3">
-        <a th:href="@{/main}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left mr-2"></i> Volver al Inicio
-        </a>
-    </div>
 </div>
 
 <!-- Scripts de Bootstrap y Font Awesome -->

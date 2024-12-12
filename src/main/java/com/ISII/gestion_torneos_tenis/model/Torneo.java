@@ -29,8 +29,6 @@ public class Torneo {
 
     private LocalDateTime fechaFin;
 
-    private int puntosAsignados;
-
     private LocalDateTime fechaCreacion;
 
     private LocalDateTime fechaActualizacion;
@@ -44,14 +42,13 @@ public class Torneo {
     public Torneo() {
     }
 
-    public Torneo(String nombreTorneo, LocalDateTime fechaLimiteInscripcion, String estadoTorneo, int numeroMaxJugadores, LocalDateTime fechaInicio, LocalDateTime fechaFin, int puntosAsignados) {
+    public Torneo(String nombreTorneo, LocalDateTime fechaLimiteInscripcion, String estadoTorneo, int numeroMaxJugadores, LocalDateTime fechaInicio, LocalDateTime fechaFin) {
         this.nombreTorneo = nombreTorneo;
         this.fechaLimiteInscripcion = fechaLimiteInscripcion;
         this.estadoTorneo = estadoTorneo;
         this.numeroMaxJugadores = numeroMaxJugadores;
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
-        this.puntosAsignados = puntosAsignados;
     }
 
     // Getters y Setters
@@ -108,13 +105,6 @@ public class Torneo {
         this.fechaFin = fechaFin;
     }
 
-    public int getPuntosAsignados() {
-        return puntosAsignados;
-    }
-
-    public void setPuntosAsignados(int puntosAsignados) {
-        this.puntosAsignados = puntosAsignados;
-    }
 
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;

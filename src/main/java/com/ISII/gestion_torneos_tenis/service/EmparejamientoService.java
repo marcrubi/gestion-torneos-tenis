@@ -131,10 +131,7 @@ public class EmparejamientoService {
 
                 System.out.println("generarEmparejamientos: Resultado automático registrado para el BYE del jugador " + jugadorConBye.getNombreUsuario());
 
-                // Actualizar puntos para el jugador con BYE
-                jugadorService.actualizarPuntos(jugadorConBye.getId(), torneo.getPuntosAsignados());
-                System.out.println("generarEmparejamientos: Puntos actualizados para el jugador con BYE.");
-            }
+                }
 
             // Actualizar estado del torneo si es la primera ronda
             torneo.setEstadoTorneo("Emparejamientos Generados");
@@ -233,9 +230,6 @@ public class EmparejamientoService {
 
                 System.out.println("generarEmparejamientos: Resultado automático registrado para el BYE del jugador " + jugadorConBye.getNombreUsuario());
 
-                // Actualizar puntos para el jugador con BYE
-                jugadorService.actualizarPuntos(jugadorConBye.getId(), torneo.getPuntosAsignados());
-                System.out.println("generarEmparejamientos: Puntos actualizados para el jugador con BYE.");
             }
 
             System.out.println("generarEmparejamientos: Generación de emparejamientos para la ronda " + ronda + " completada.");
@@ -247,19 +241,7 @@ public class EmparejamientoService {
         return resultadoService.calcularGanadorPartido(emparejamientoId);
     }
 
-    public List<Emparejamiento> obtenerEmparejamientosPorTorneoYRonda(Long torneoId, int ronda) {
-        return emparejamientoRepository.findByTorneo_IdAndNumeroRonda(torneoId, ronda);
-    }
 
-    public List<Emparejamiento> obtenerEmparejamientosPorTorneo(Long torneoId) {
-        Optional<Torneo> torneoOpt = torneoRepository.findById(torneoId);
-        if (torneoOpt.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        Torneo torneo = torneoOpt.get();
-        return emparejamientoRepository.findByTorneo(torneo);
-    }
     @Transactional
     public void verificarYGestionarSiguienteRonda(Long torneoId) {
         List<Emparejamiento> emparejamientos = emparejamientoRepository.findByTorneo_Id(torneoId);

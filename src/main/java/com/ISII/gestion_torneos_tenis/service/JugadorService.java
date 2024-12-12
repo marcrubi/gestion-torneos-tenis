@@ -213,32 +213,6 @@ public class JugadorService implements UserDetailsService {
         return new ResponseEntity<>("Perfil actualizado exitosamente.", HttpStatus.OK);
     }
 
-    /**
-     * Incrementa los puntos de un jugador.
-     */
-    public void incrementarPuntos(Long jugadorId, int puntos) {
-        Jugador jugador = jugadorRepository.findById(jugadorId)
-                .orElseThrow(() -> new UsernameNotFoundException("Jugador no encontrado con ID: " + jugadorId));
-        jugador.setPuntos(jugador.getPuntos() + puntos);
-        jugadorRepository.save(jugador);
-    }
-
-    /**
-     * Decrementa los puntos de un jugador.
-     */
-    public void decrementarPuntos(Long jugadorId, int puntos) {
-        Jugador jugador = jugadorRepository.findById(jugadorId)
-                .orElseThrow(() -> new UsernameNotFoundException("Jugador no encontrado con ID: " + jugadorId));
-        jugador.setPuntos(jugador.getPuntos() - puntos);
-        jugadorRepository.save(jugador);
-    }
-
-    public boolean esAdmin(String nombreUsuario) {
-        Jugador jugador = jugadorRepository.findByNombreUsuario(nombreUsuario)
-                .orElseThrow(() -> new RuntimeException("Jugador no encontrado"));
-        return jugador.isAdmin();
-    }
-
     @Override
     public UserDetails loadUserByUsername(String nombreUsuario) throws UsernameNotFoundException {
         logger.debug("Intentando cargar usuario: '{}'", nombreUsuario);

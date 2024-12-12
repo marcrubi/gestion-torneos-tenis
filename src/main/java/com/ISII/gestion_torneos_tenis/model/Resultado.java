@@ -36,6 +36,18 @@ public class Resultado {
     @Column(name = "set3_jugador2_score")
     private Integer set3Jugador2Score;
 
+    @Column(name = "set4_jugador1_score")
+    private Integer set4Jugador1Score;
+
+    @Column(name = "set4_jugador2_score")
+    private Integer set4Jugador2Score;
+
+    @Column(name = "set5_jugador1_score")
+    private Integer set5Jugador1Score;
+
+    @Column(name = "set5_jugador2_score")
+    private Integer set5Jugador2Score;
+
     @ManyToOne
     @JoinColumn(name = "ganador_id", nullable = false)
     private Jugador ganador;
@@ -57,11 +69,12 @@ public class Resultado {
     public Resultado() {
     }
 
-    // Constructor con todos los campos excepto IDs y fechas
     public Resultado(Emparejamiento emparejamiento,
                      Integer set1Jugador1Score, Integer set1Jugador2Score,
                      Integer set2Jugador1Score, Integer set2Jugador2Score,
                      Integer set3Jugador1Score, Integer set3Jugador2Score,
+                     Integer set4Jugador1Score, Integer set4Jugador2Score,
+                     Integer set5Jugador1Score, Integer set5Jugador2Score,
                      Jugador ganador,
                      Integer juegosGanadosJugador1, Integer juegosGanadosJugador2) {
         this.emparejamiento = emparejamiento;
@@ -71,6 +84,10 @@ public class Resultado {
         this.set2Jugador2Score = set2Jugador2Score;
         this.set3Jugador1Score = set3Jugador1Score;
         this.set3Jugador2Score = set3Jugador2Score;
+        this.set4Jugador1Score = set4Jugador1Score;
+        this.set4Jugador2Score = set4Jugador2Score;
+        this.set5Jugador1Score = set5Jugador1Score;
+        this.set5Jugador2Score = set5Jugador2Score;
         this.ganador = ganador;
         this.juegosGanadosJugador1 = juegosGanadosJugador1;
         this.juegosGanadosJugador2 = juegosGanadosJugador2;
@@ -148,6 +165,38 @@ public class Resultado {
 
     public Integer getJuegosGanadosJugador1() {
         return juegosGanadosJugador1;
+    }
+
+    public Integer getSet4Jugador1Score() {
+        return set4Jugador1Score;
+    }
+
+    public void setSet4Jugador1Score(Integer set4Jugador1Score) {
+        this.set4Jugador1Score = set4Jugador1Score;
+    }
+
+    public Integer getSet4Jugador2Score() {
+        return set4Jugador2Score;
+    }
+
+    public void setSet4Jugador2Score(Integer set4Jugador2Score) {
+        this.set4Jugador2Score = set4Jugador2Score;
+    }
+
+    public Integer getSet5Jugador1Score() {
+        return set5Jugador1Score;
+    }
+
+    public void setSet5Jugador1Score(Integer set5Jugador1Score) {
+        this.set5Jugador1Score = set5Jugador1Score;
+    }
+
+    public Integer getSet5Jugador2Score() {
+        return set5Jugador2Score;
+    }
+
+    public void setSet5Jugador2Score(Integer set5Jugador2Score) {
+        this.set5Jugador2Score = set5Jugador2Score;
     }
 
     public void setJuegosGanadosJugador1(Integer juegosGanadosJugador1) {

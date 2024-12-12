@@ -25,7 +25,7 @@ public class HomeController {
 
     @GetMapping("/")
     public String home() {
-        return "menu"; // Retorna menu.html
+        return "public/menu"; // Retorna menu.html
     }
 
     @GetMapping("/main")

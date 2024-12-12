@@ -190,13 +190,34 @@
                     </div>
                 </div>
 
-                <div class="set-inputs" th:if="${emparejamiento.jugador2 != null}">
-                    <h6>Set 3 (Opcional):</h6>
+                <div class="set-inputs">
+                    <h6>Set 3:</h6>
                     <div class="form-inline">
                         <label class="mr-2">Jugador 1:</label>
-                        <input type="number" name="set3Jugador1Score" class="form-control mr-4" min="0" max="7" />
+                        <input type="number" name="set3Jugador1Score" class="form-control mr-4" min="0" max="7" required />
                         <label class="mr-2">Jugador 2:</label>
-                        <input type="number" name="set3Jugador2Score" class="form-control" min="0" max="7" />
+                        <input type="number" name="set3Jugador2Score" class="form-control" min="0" max="7" required />
+                    </div>
+                </div>
+
+                <!-- Nuevos campos para Set 4 y Set 5 -->
+                <div class="set-inputs">
+                    <h6>Set 4 (Opcional):</h6>
+                    <div class="form-inline">
+                        <label class="mr-2">Jugador 1:</label>
+                        <input type="number" name="set4Jugador1Score" class="form-control mr-4" min="0" max="7" />
+                        <label class="mr-2">Jugador 2:</label>
+                        <input type="number" name="set4Jugador2Score" class="form-control" min="0" max="7" />
+                    </div>
+                </div>
+
+                <div class="set-inputs">
+                    <h6>Set 5 (Opcional):</h6>
+                    <div class="form-inline">
+                        <label class="mr-2">Jugador 1:</label>
+                        <input type="number" name="set5Jugador1Score" class="form-control mr-4" min="0" max="7" />
+                        <label class="mr-2">Jugador 2:</label>
+                        <input type="number" name="set5Jugador2Score" class="form-control" min="0" max="7" />
                     </div>
                 </div>
             </div>

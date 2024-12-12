@@ -11,6 +11,7 @@ import com.ISII.gestion_torneos_tenis.repository.JugadorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -36,11 +37,7 @@ public class ResultadoService {
     @Autowired
     private TorneoService torneoService;
 
-    /**
-     * Calcular automáticamente el ganador del partido.
-     * Este método genera resultados aleatorios para cada set y determina el ganador.
-     * Luego guarda el resultado en la base de datos.
-     */
+    @Transactional
     public ResponseEntity<String> calcularGanadorPartido(Long emparejamientoId) {
         Optional<Emparejamiento> emparejamientoOpt = emparejamientoRepository.findById(emparejamientoId);
         if (emparejamientoOpt.isEmpty()) {
@@ -49,47 +46,42 @@ public class ResultadoService {
 
         Emparejamiento emparejamiento = emparejamientoOpt.get();
 
-        // Verificar si ya existe un resultado para este emparejamiento
-        if (!resultadoRepository.findByEmparejamiento(emparejamiento).isEmpty()) {
-            return new ResponseEntity<>("Ya se ha calculado el ganador para este partido.", HttpStatus.BAD_REQUEST);
+        // Obtener el resultado existente
+        Optional<Resultado> resultadoOpt = resultadoRepository.findByEmparejamiento(emparejamiento).stream().findFirst();
+        if (resultadoOpt.isEmpty()) {
+            return new ResponseEntity<>("No se ha ingresado ningún resultado para este emparejamiento.", HttpStatus.BAD_REQUEST);
         }
 
-        // Generar resultados aleatorios para cada set
-        // Supongamos que los partidos son al mejor de 3 sets
+        Resultado resultado = resultadoOpt.get();
 
-        Random random = new Random();
+        // Verificar si ya se ha calculado el ganador
+        if (resultado.getGanador() != null) {
+            return new ResponseEntity<>("El ganador ya ha sido calculado para este emparejamiento.", HttpStatus.BAD_REQUEST);
+        }
+
+        // Contar los sets ganados por cada jugador
         int setsGanadosJugador1 = 0;
         int setsGanadosJugador2 = 0;
 
-        Integer set1Jugador1Score = generarSet(random);
-        Integer set1Jugador2Score = generarSet(random);
+        // Listar los puntajes de los sets
+        Integer[][] sets = {
+                {resultado.getSet1Jugador1Score(), resultado.getSet1Jugador2Score()},
+                {resultado.getSet2Jugador1Score(), resultado.getSet2Jugador2Score()},
+                {resultado.getSet3Jugador1Score(), resultado.getSet3Jugador2Score()},
+                {resultado.getSet4Jugador1Score(), resultado.getSet4Jugador2Score()},
+                {resultado.getSet5Jugador1Score(), resultado.getSet5Jugador2Score()}
+        };
 
-        if (set1Jugador1Score > set1Jugador2Score) {
-            setsGanadosJugador1++;
-        } else {
-            setsGanadosJugador2++;
-        }
-
-        Integer set2Jugador1Score = generarSet(random);
-        Integer set2Jugador2Score = generarSet(random);
-
-        if (set2Jugador1Score > set2Jugador2Score) {
-            setsGanadosJugador1++;
-        } else {
-            setsGanadosJugador2++;
-        }
-
-        Integer set3Jugador1Score = null;
-        Integer set3Jugador2Score = null;
-
-        if (setsGanadosJugador1 == 1 && setsGanadosJugador2 == 1) {
-            set3Jugador1Score = generarSet(random);
-            set3Jugador2Score = generarSet(random);
-
-            if (set3Jugador1Score > set3Jugador2Score) {
-                setsGanadosJugador1++;
-            } else {
-                setsGanadosJugador2++;
+        for (Integer[] set : sets) {
+            if (set[0] != null && set[1] != null) {
+                if (set[0] > set[1]) {
+                    setsGanadosJugador1++;
+                } else if (set[1] > set[0]) {
+                    setsGanadosJugador2++;
+                } else {
+                    // Empate en un set no es válido en tenis; puedes manejarlo según tus reglas
+                    return new ResponseEntity<>("Empate encontrado en uno de los sets, lo cual no es válido.", HttpStatus.BAD_REQUEST);
+                }
             }
         }
 
@@ -97,75 +89,36 @@ public class ResultadoService {
         Jugador ganador;
         if (setsGanadosJugador1 > setsGanadosJugador2) {
             ganador = emparejamiento.getJugador1();
-        } else {
+        } else if (setsGanadosJugador2 > setsGanadosJugador1) {
             ganador = emparejamiento.getJugador2();
+        } else {
+            return new ResponseEntity<>("El resultado de los sets es inconsistente o ha habido un empate en sets.", HttpStatus.BAD_REQUEST);
         }
 
-        // Crear y guardar el resultado
-        Resultado resultado = new Resultado();
-        resultado.setEmparejamiento(emparejamiento);
+        // Asignar el ganador al resultado
         resultado.setGanador(ganador);
-        resultado.setSet1Jugador1Score(set1Jugador1Score);
-        resultado.setSet1Jugador2Score(set1Jugador2Score);
 
-        if (set2Jugador1Score != null && set2Jugador2Score != null) {
-            resultado.setSet2Jugador1Score(set2Jugador1Score);
-            resultado.setSet2Jugador2Score(set2Jugador2Score);
-        }
-
-        if (set3Jugador1Score != null && set3Jugador2Score != null) {
-            resultado.setSet3Jugador1Score(set3Jugador1Score);
-            resultado.setSet3Jugador2Score(set3Jugador2Score);
-        }
-
-        // Calcular Juegos Ganados por Cada Jugador
+        // Calcular juegos ganados por cada jugador
         int juegosGanadosJugador1 = 0;
         int juegosGanadosJugador2 = 0;
 
-        // Asumiendo que cada set representa juegos ganados
-        if (resultado.getSet1Jugador1Score() != null && resultado.getSet1Jugador2Score() != null) {
-            juegosGanadosJugador1 += resultado.getSet1Jugador1Score();
-            juegosGanadosJugador2 += resultado.getSet1Jugador2Score();
-        }
-
-        if (resultado.getSet2Jugador1Score() != null && resultado.getSet2Jugador2Score() != null) {
-            juegosGanadosJugador1 += resultado.getSet2Jugador1Score();
-            juegosGanadosJugador2 += resultado.getSet2Jugador2Score();
-        }
-
-        if (resultado.getSet3Jugador1Score() != null && resultado.getSet3Jugador2Score() != null) {
-            juegosGanadosJugador1 += resultado.getSet3Jugador1Score();
-            juegosGanadosJugador2 += resultado.getSet3Jugador2Score();
+        for (Integer[] set : sets) {
+            if (set[0] != null && set[1] != null) {
+                juegosGanadosJugador1 += set[0];
+                juegosGanadosJugador2 += set[1];
+            }
         }
 
         resultado.setJuegosGanadosJugador1(juegosGanadosJugador1);
         resultado.setJuegosGanadosJugador2(juegosGanadosJugador2);
 
+        // Guardar el resultado actualizado
         resultadoRepository.save(resultado);
-
 
         return new ResponseEntity<>("Ganador del partido calculado y guardado exitosamente.", HttpStatus.OK);
     }
 
-    /**
-     * Genera un puntaje aleatorio válido para un set.
-     * Asegura que uno de los jugadores gana el set con una diferencia de al menos 2 juegos.
-     */
-    private Integer generarSet(Random random) {
-        int score1, score2;
-        while (true) {
-            score1 = random.nextInt(7); // 0 a 6
-            score2 = random.nextInt(7); // 0 a 6
-            if ((score1 >= 6 || score2 >= 6) && Math.abs(score1 - score2) >= 2) {
-                break;
-            }
-        }
-        return score1 > score2 ? score1 : score2;
-    }
 
-    /**
-     * Guarda manualmente el resultado de un emparejamiento ingresado por el administrador.
-     */
     public ResponseEntity<String> guardarResultadoManual(Long emparejamientoId, Resultado resultadoIngresado) {
         Optional<Emparejamiento> emparejamientoOpt = emparejamientoRepository.findById(emparejamientoId);
         if (emparejamientoOpt.isEmpty()) {
@@ -183,6 +136,7 @@ public class ResultadoService {
         int setsGanadosJugador1 = 0;
         int setsGanadosJugador2 = 0;
 
+        // Verificar cada set
         if (resultadoIngresado.getSet1Jugador1Score() != null && resultadoIngresado.getSet1Jugador2Score() != null) {
             if (resultadoIngresado.getSet1Jugador1Score() > resultadoIngresado.getSet1Jugador2Score()) {
                 setsGanadosJugador1++;
@@ -207,8 +161,31 @@ public class ResultadoService {
             }
         }
 
+        if (resultadoIngresado.getSet4Jugador1Score() != null && resultadoIngresado.getSet4Jugador2Score() != null) {
+            if (resultadoIngresado.getSet4Jugador1Score() > resultadoIngresado.getSet4Jugador2Score()) {
+                setsGanadosJugador1++;
+            } else {
+                setsGanadosJugador2++;
+            }
+        }
+
+        if (resultadoIngresado.getSet5Jugador1Score() != null && resultadoIngresado.getSet5Jugador2Score() != null) {
+            if (resultadoIngresado.getSet5Jugador1Score() > resultadoIngresado.getSet5Jugador2Score()) {
+                setsGanadosJugador1++;
+            } else {
+                setsGanadosJugador2++;
+            }
+        }
+
         // Determinar el ganador
-        Jugador ganador = (setsGanadosJugador1 > setsGanadosJugador2) ? emparejamiento.getJugador1() : emparejamiento.getJugador2();
+        Jugador ganador;
+        if (setsGanadosJugador1 > setsGanadosJugador2) {
+            ganador = emparejamiento.getJugador1();
+        } else if (setsGanadosJugador2 > setsGanadosJugador1) {
+            ganador = emparejamiento.getJugador2();
+        } else {
+            return new ResponseEntity<>("El resultado de los sets es inconsistente o empate.", HttpStatus.BAD_REQUEST);
+        }
 
         resultadoIngresado.setEmparejamiento(emparejamiento);
         resultadoIngresado.setGanador(ganador);
@@ -233,15 +210,23 @@ public class ResultadoService {
             juegosGanadosJugador2 += resultadoIngresado.getSet3Jugador2Score();
         }
 
+        if (resultadoIngresado.getSet4Jugador1Score() != null && resultadoIngresado.getSet4Jugador2Score() != null) {
+            juegosGanadosJugador1 += resultadoIngresado.getSet4Jugador1Score();
+            juegosGanadosJugador2 += resultadoIngresado.getSet4Jugador2Score();
+        }
+
+        if (resultadoIngresado.getSet5Jugador1Score() != null && resultadoIngresado.getSet5Jugador2Score() != null) {
+            juegosGanadosJugador1 += resultadoIngresado.getSet5Jugador1Score();
+            juegosGanadosJugador2 += resultadoIngresado.getSet5Jugador2Score();
+        }
+
         resultadoIngresado.setJuegosGanadosJugador1(juegosGanadosJugador1);
         resultadoIngresado.setJuegosGanadosJugador2(juegosGanadosJugador2);
 
-        // Guardar el resultado
         resultadoRepository.save(resultadoIngresado);
-
-        // Actualizar puntos del ganador
-        torneoService.actualizarPuntosGanador(ganador.getId(), emparejamiento.getTorneo().getPuntosAsignados());
 
         return new ResponseEntity<>("Resultado ingresado exitosamente.", HttpStatus.OK);
     }
+
+
 }

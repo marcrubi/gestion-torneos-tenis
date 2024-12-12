@@ -37,33 +37,79 @@ public class EstadisticasService {
 
         // Getters y Setters
 
-        public String getNombreUsuario() { return nombreUsuario; }
-        public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
+        public String getNombreUsuario() {
+            return nombreUsuario;
+        }
 
-        public String getNombre() { return nombre; }
-        public void setNombre(String nombre) { this.nombre = nombre; }
+        public void setNombreUsuario(String nombreUsuario) {
+            this.nombreUsuario = nombreUsuario;
+        }
 
-        public String getApellidos() { return apellidos; }
-        public void setApellidos(String apellidos) { this.apellidos = apellidos; }
+        public String getNombre() {
+            return nombre;
+        }
 
-        public int getPartidosGanados() { return partidosGanados; }
-        public void setPartidosGanados(int partidosGanados) { this.partidosGanados = partidosGanados; }
+        public void setNombre(String nombre) {
+            this.nombre = nombre;
+        }
 
-        public int getSetsGanados() { return setsGanados; }
-        public void setSetsGanados(int setsGanados) { this.setsGanados = setsGanados; }
+        public String getApellidos() {
+            return apellidos;
+        }
 
-        public int getSetsPerdidos() { return setsPerdidos; }
-        public void setSetsPerdidos(int setsPerdidos) { this.setsPerdidos = setsPerdidos; }
+        public void setApellidos(String apellidos) {
+            this.apellidos = apellidos;
+        }
 
-        public int getJuegosGanados() { return juegosGanados; }
-        public void setJuegosGanados(int juegosGanados) { this.juegosGanados = juegosGanados; }
+        public int getPartidosGanados() {
+            return partidosGanados;
+        }
 
-        public int getJuegosPerdidos() { return juegosPerdidos; }
-        public void setJuegosPerdidos(int juegosPerdidos) { this.juegosPerdidos = juegosPerdidos; }
+        public void setPartidosGanados(int partidosGanados) {
+            this.partidosGanados = partidosGanados;
+        }
 
-        public int getPosicionRanking() { return posicionRanking; }
-        public void setPosicionRanking(int posicionRanking) { this.posicionRanking = posicionRanking; }
+        public int getSetsGanados() {
+            return setsGanados;
+        }
+
+        public void setSetsGanados(int setsGanados) {
+            this.setsGanados = setsGanados;
+        }
+
+        public int getSetsPerdidos() {
+            return setsPerdidos;
+        }
+
+        public void setSetsPerdidos(int setsPerdidos) {
+            this.setsPerdidos = setsPerdidos;
+        }
+
+        public int getJuegosGanados() {
+            return juegosGanados;
+        }
+
+        public void setJuegosGanados(int juegosGanados) {
+            this.juegosGanados = juegosGanados;
+        }
+
+        public int getJuegosPerdidos() {
+            return juegosPerdidos;
+        }
+
+        public void setJuegosPerdidos(int juegosPerdidos) {
+            this.juegosPerdidos = juegosPerdidos;
+        }
+
+        public int getPosicionRanking() {
+            return posicionRanking;
+        }
+
+        public void setPosicionRanking(int posicionRanking) {
+            this.posicionRanking = posicionRanking;
+        }
     }
+
 
     @Transactional(readOnly = true)
     public EstadisticasJugador calcularEstadisticas(Long jugadorId) {
@@ -94,84 +140,55 @@ public class EstadisticasService {
                 // Determinar si el jugador es J1 o J2 en este emparejamiento
                 boolean esJugador1 = (e.getJugador1() != null && e.getJugador1().getId().equals(jugadorId));
 
-                // Set1
-                Integer s1j1 = r.getSet1Jugador1Score();
-                Integer s1j2 = r.getSet1Jugador2Score();
-                if (s1j1 != null && s1j2 != null) {
-                    if (esJugador1) {
-                        if (s1j1 > s1j2) {
-                            estadisticas.setSetsGanados(estadisticas.getSetsGanados() + 1);
-                            setsGanadosPartido++;
-                        } else {
-                            estadisticas.setSetsPerdidos(estadisticas.getSetsPerdidos() + 1);
-                            setsPerdidosPartido++;
-                        }
-                        estadisticas.setJuegosGanados(estadisticas.getJuegosGanados() + s1j1);
-                        estadisticas.setJuegosPerdidos(estadisticas.getJuegosPerdidos() + s1j2);
-                    } else {
-                        if (s1j2 > s1j1) {
-                            estadisticas.setSetsGanados(estadisticas.getSetsGanados() + 1);
-                            setsGanadosPartido++;
-                        } else {
-                            estadisticas.setSetsPerdidos(estadisticas.getSetsPerdidos() + 1);
-                            setsPerdidosPartido++;
-                        }
-                        estadisticas.setJuegosGanados(estadisticas.getJuegosGanados() + s1j2);
-                        estadisticas.setJuegosPerdidos(estadisticas.getJuegosPerdidos() + s1j1);
+                // Procesar hasta 5 sets
+                for (int setNum = 1; setNum <= 5; setNum++) {
+                    Integer sJ1 = null;
+                    Integer sJ2 = null;
+                    switch (setNum) {
+                        case 1:
+                            sJ1 = r.getSet1Jugador1Score();
+                            sJ2 = r.getSet1Jugador2Score();
+                            break;
+                        case 2:
+                            sJ1 = r.getSet2Jugador1Score();
+                            sJ2 = r.getSet2Jugador2Score();
+                            break;
+                        case 3:
+                            sJ1 = r.getSet3Jugador1Score();
+                            sJ2 = r.getSet3Jugador2Score();
+                            break;
+                        case 4:
+                            sJ1 = r.getSet4Jugador1Score();
+                            sJ2 = r.getSet4Jugador2Score();
+                            break;
+                        case 5:
+                            sJ1 = r.getSet5Jugador1Score();
+                            sJ2 = r.getSet5Jugador2Score();
+                            break;
                     }
-                }
 
-                // Set2
-                Integer s2j1 = r.getSet2Jugador1Score();
-                Integer s2j2 = r.getSet2Jugador2Score();
-                if (s2j1 != null && s2j2 != null) {
-                    if (esJugador1) {
-                        if (s2j1 > s2j2) {
-                            estadisticas.setSetsGanados(estadisticas.getSetsGanados() + 1);
-                            setsGanadosPartido++;
+                    if (sJ1 != null && sJ2 != null) {
+                        if (esJugador1) {
+                            if (sJ1 > sJ2) {
+                                estadisticas.setSetsGanados(estadisticas.getSetsGanados() + 1);
+                                setsGanadosPartido++;
+                            } else {
+                                estadisticas.setSetsPerdidos(estadisticas.getSetsPerdidos() + 1);
+                                setsPerdidosPartido++;
+                            }
+                            estadisticas.setJuegosGanados(estadisticas.getJuegosGanados() + sJ1);
+                            estadisticas.setJuegosPerdidos(estadisticas.getJuegosPerdidos() + sJ2);
                         } else {
-                            estadisticas.setSetsPerdidos(estadisticas.getSetsPerdidos() + 1);
-                            setsPerdidosPartido++;
+                            if (sJ2 > sJ1) {
+                                estadisticas.setSetsGanados(estadisticas.getSetsGanados() + 1);
+                                setsGanadosPartido++;
+                            } else {
+                                estadisticas.setSetsPerdidos(estadisticas.getSetsPerdidos() + 1);
+                                setsPerdidosPartido++;
+                            }
+                            estadisticas.setJuegosGanados(estadisticas.getJuegosGanados() + sJ2);
+                            estadisticas.setJuegosPerdidos(estadisticas.getJuegosPerdidos() + sJ1);
                         }
-                        estadisticas.setJuegosGanados(estadisticas.getJuegosGanados() + s2j1);
-                        estadisticas.setJuegosPerdidos(estadisticas.getJuegosPerdidos() + s2j2);
-                    } else {
-                        if (s2j2 > s2j1) {
-                            estadisticas.setSetsGanados(estadisticas.getSetsGanados() + 1);
-                            setsGanadosPartido++;
-                        } else {
-                            estadisticas.setSetsPerdidos(estadisticas.getSetsPerdidos() + 1);
-                            setsPerdidosPartido++;
-                        }
-                        estadisticas.setJuegosGanados(estadisticas.getJuegosGanados() + s2j2);
-                        estadisticas.setJuegosPerdidos(estadisticas.getJuegosPerdidos() + s2j1);
-                    }
-                }
-
-                // Set3
-                Integer s3j1 = r.getSet3Jugador1Score();
-                Integer s3j2 = r.getSet3Jugador2Score();
-                if (s3j1 != null && s3j2 != null) {
-                    if (esJugador1) {
-                        if (s3j1 > s3j2) {
-                            estadisticas.setSetsGanados(estadisticas.getSetsGanados() + 1);
-                            setsGanadosPartido++;
-                        } else {
-                            estadisticas.setSetsPerdidos(estadisticas.getSetsPerdidos() + 1);
-                            setsPerdidosPartido++;
-                        }
-                        estadisticas.setJuegosGanados(estadisticas.getJuegosGanados() + s3j1);
-                        estadisticas.setJuegosPerdidos(estadisticas.getJuegosPerdidos() + s3j2);
-                    } else {
-                        if (s3j2 > s3j1) {
-                            estadisticas.setSetsGanados(estadisticas.getSetsGanados() + 1);
-                            setsGanadosPartido++;
-                        } else {
-                            estadisticas.setSetsPerdidos(estadisticas.getSetsPerdidos() + 1);
-                            setsPerdidosPartido++;
-                        }
-                        estadisticas.setJuegosGanados(estadisticas.getJuegosGanados() + s3j2);
-                        estadisticas.setJuegosPerdidos(estadisticas.getJuegosPerdidos() + s3j1);
                     }
                 }
             }
@@ -184,4 +201,5 @@ public class EstadisticasService {
 
         return estadisticas;
     }
+
 }

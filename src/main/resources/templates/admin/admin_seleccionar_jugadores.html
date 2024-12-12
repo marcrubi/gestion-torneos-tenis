@@ -181,6 +181,21 @@
         </p>
     </div>
 
+    <!-- Formulario para Selección Automática -->
+    <form th:action="@{/admin/torneos/{id}/seleccionar-jugadores/automatico(id=${torneo.id})}" method="post" class="mb-3">
+        <!-- Incluir el token CSRF -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-magic mr-2"></i> Seleccionar Automáticamente
+        </button>
+    </form>
+
+    <!-- Campo oculto para jugadores seleccionados automáticamente -->
+    <div th:if="${jugadoresSeleccionadosIds != null}">
+        <input type="hidden" id="preseleccionados" th:value="${jugadoresSeleccionadosIds}" />
+    </div>
+
+    <!-- Formulario para Confirmar Selección Manual -->
     <form th:action="@{/admin/torneos/{id}/seleccionar-jugadores(id=${torneo.id})}" method="post">
         <!-- Incluir el token CSRF -->
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -191,9 +206,10 @@
                 <th>Seleccionar</th>
                 <th>ID</th>
                 <th>Nombre de Usuario</th>
-                <th>Nombre</th>
-                <th>Apellidos</th>
                 <th>Puntos</th>
+                <th>Sets Ganados</th>
+                <th>Juegos Ganados</th>
+                <th>Juegos Perdidos</th>
             </tr>
             </thead>
             <tbody>
@@ -201,17 +217,19 @@
                 <td>
                     <input type="checkbox" name="jugadoresSeleccionadosIds"
                            th:value="${inscripcion.jugador.id}"
+                           th:checked="${jugadoresSeleccionadosIds != null and #lists.contains(jugadoresSeleccionadosIds, inscripcion.jugador.id)}"
                            class="checkbox-jugador"
                            onclick="actualizarContador(this)" />
                 </td>
                 <td th:text="${inscripcion.jugador.id}">1</td>
                 <td th:text="${inscripcion.jugador.nombreUsuario}">marc</td>
-                <td th:text="${inscripcion.jugador.nombre}">Marc</td>
-                <td th:text="${inscripcion.jugador.apellidos}">Pérez</td>
                 <td th:text="${rankingJugadores[inscripcion.jugador.id]}">2000</td>
+                <td th:text="${setsGanadosMap[inscripcion.jugador.id]}">10</td> <!-- Nueva columna -->
+                <td th:text="${juegosGanadosMap[inscripcion.jugador.id]}">50</td> <!-- Nueva columna -->
+                <td th:text="${juegosPerdidosMap[inscripcion.jugador.id]}">30</td> <!-- Nueva columna -->
             </tr>
             <tr th:if="${#lists.isEmpty(jugadoresInscritos)}">
-                <td colspan="6" class="text-center">No hay jugadores inscritos en este torneo.</td>
+                <td colspan="9" class="text-center">No hay jugadores inscritos en este torneo.</td>
             </tr>
             </tbody>
         </table>
@@ -230,7 +248,7 @@
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 
-<!-- Script para el contador -->
+<!-- Script para el contador y preselección -->
 <script>
     const maxSeleccionados = 16; // Cambia según el límite del torneo
     let seleccionados = 0;
@@ -256,6 +274,27 @@
             }
         });
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const preseleccionadosElement = document.getElementById('preseleccionados');
+        const preseleccionados = preseleccionadosElement ? JSON.parse(preseleccionadosElement.value) : [];
+        const checkboxes = document.querySelectorAll('.checkbox-jugador');
+
+        checkboxes.forEach(cb => {
+            if (preseleccionados.includes(parseInt(cb.value))) {
+                cb.checked = true;
+                seleccionados++;
+            }
+        });
+
+        document.getElementById('seleccionados').textContent = seleccionados;
+
+        checkboxes.forEach(cb => {
+            if (!cb.checked) {
+                cb.disabled = seleccionados >= maxSeleccionados;
+            }
+        });
+    });
 </script>
 </body>
 </html>

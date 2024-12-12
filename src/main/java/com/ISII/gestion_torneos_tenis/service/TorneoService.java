@@ -54,51 +54,7 @@ public class TorneoService {
         return torneoRepository.findByEstadoTorneo("Pendiente");
     }
 
-    /**
-     * Método placeholder para generar emparejamientos.
-     */
-    public ResponseEntity<String> generarEmparejamientos(Long torneoId) {
-        return new ResponseEntity<>("Función no utilizada aquí", HttpStatus.OK);
-    }
 
-    /**
-     * Obtiene el ID del torneo al que pertenece un emparejamiento.
-     */
-    public Long obtenerTorneoPorEmparejamiento(Long emparejamientoId) {
-        Optional<Emparejamiento> emparejamientoOpt = emparejamientoRepository.findById(emparejamientoId);
-        if (emparejamientoOpt.isEmpty()) {
-            throw new RuntimeException("Emparejamiento no encontrado con ID: " + emparejamientoId);
-        }
-        return emparejamientoOpt.get().getTorneo().getId();
-    }
-
-    /**
-     * Obtiene todos los torneos.
-     */
-    public List<Torneo> obtenerTodosLosTorneos() {
-        return torneoRepository.findAll();
-    }
-
-    /**
-     * Actualiza los puntos de un jugador.
-     */
-    public void actualizarPuntosGanador(Long jugadorId, int puntosAsignados) {
-        Jugador jugador = jugadorRepository.findById(jugadorId)
-                .orElseThrow(() -> new UsernameNotFoundException("Jugador no encontrado con ID: " + jugadorId));
-        jugador.setPuntos(jugador.getPuntos() + puntosAsignados);
-        jugadorRepository.save(jugador);
-    }
-
-    /**
-     * Obtiene los torneos disponibles para inscripción.
-     */
-    public List<Torneo> obtenerTorneosDisponiblesParaInscripcion() {
-        List<Torneo> todosTorneos = torneoRepository.findAll();
-        return todosTorneos.stream()
-                .filter(torneo -> "Inscrito".equalsIgnoreCase(torneo.getEstadoTorneo()))
-                .filter(torneo -> LocalDateTime.now().isBefore(torneo.getFechaLimiteInscripcion()))
-                .collect(Collectors.toList());
-    }
 
     /**
      * Método para finalizar el torneo:
@@ -108,6 +64,12 @@ public class TorneoService {
      */
     public void finalizarTorneo(Long torneoId) {
         Torneo torneo = getTorneoById(torneoId);
+
+        // Verificar si el torneo ya está finalizado
+        if ("Finalizado".equalsIgnoreCase(torneo.getEstadoTorneo())) {
+            System.out.println("finalizarTorneo: El torneo ID " + torneoId + " ya está finalizado.");
+            return;
+        }
 
         // Obtener jugadores confirmados
         List<Inscripcion> inscripcionesConfirmadas = inscripcionRepository.findByTorneo(torneo).stream()
@@ -233,6 +195,8 @@ public class TorneoService {
     /**
      * Calcula las estadísticas por torneo y jugador (sets/juegos ganados/perdidos, etc.).
      */
+    // src/main/java/com/ISII/gestion_torneos_tenis/service/TorneoService.java
+
     private EstadisticasService.EstadisticasJugador calcularEstadisticasPorTorneo(Long torneoId, Long jugadorId) {
         Torneo torneo = getTorneoById(torneoId);
         List<Emparejamiento> emparejamientosTorneo = emparejamientoRepository.findByTorneo(torneo).stream()
@@ -256,84 +220,59 @@ public class TorneoService {
             boolean esJugador1 = (e.getJugador1() != null && e.getJugador1().getId().equals(jugadorId));
 
             for (Resultado r : e.getResultados()) {
-                // Set1
-                Integer s1j1 = r.getSet1Jugador1Score();
-                Integer s1j2 = r.getSet1Jugador2Score();
-                if (s1j1 != null && s1j2 != null) {
-                    if (esJugador1) {
-                        if (s1j1 > s1j2) {
-                            est.setSetsGanados(est.getSetsGanados() + 1);
-                            setsGanadosPartido++;
-                        } else {
-                            est.setSetsPerdidos(est.getSetsPerdidos() + 1);
-                            setsPerdidosPartido++;
-                        }
-                        est.setJuegosGanados(est.getJuegosGanados() + s1j1);
-                        est.setJuegosPerdidos(est.getJuegosPerdidos() + s1j2);
-                    } else {
-                        if (s1j2 > s1j1) {
-                            est.setSetsGanados(est.getSetsGanados() + 1);
-                            setsGanadosPartido++;
-                        } else {
-                            est.setSetsPerdidos(est.getSetsPerdidos() + 1);
-                            setsPerdidosPartido++;
-                        }
-                        est.setJuegosGanados(est.getJuegosGanados() + s1j2);
-                        est.setJuegosPerdidos(est.getJuegosPerdidos() + s1j1);
+                // Procesar hasta 5 sets
+                for (int setNum = 1; setNum <= 5; setNum++) {
+                    Integer sJ1 = null;
+                    Integer sJ2 = null;
+                    switch (setNum) {
+                        case 1:
+                            sJ1 = r.getSet1Jugador1Score();
+                            sJ2 = r.getSet1Jugador2Score();
+                            break;
+                        case 2:
+                            sJ1 = r.getSet2Jugador1Score();
+                            sJ2 = r.getSet2Jugador2Score();
+                            break;
+                        case 3:
+                            sJ1 = r.getSet3Jugador1Score();
+                            sJ2 = r.getSet3Jugador2Score();
+                            break;
+                        case 4:
+                            sJ1 = r.getSet4Jugador1Score();
+                            sJ2 = r.getSet4Jugador2Score();
+                            break;
+                        case 5:
+                            sJ1 = r.getSet5Jugador1Score();
+                            sJ2 = r.getSet5Jugador2Score();
+                            break;
                     }
-                }
 
-                // Set2
-                Integer s2j1 = r.getSet2Jugador1Score();
-                Integer s2j2 = r.getSet2Jugador2Score();
-                if (s2j1 != null && s2j2 != null) {
-                    if (esJugador1) {
-                        if (s2j1 > s2j2) {
-                            est.setSetsGanados(est.getSetsGanados() + 1);
-                            setsGanadosPartido++;
+                    if (sJ1 != null && sJ2 != null) {
+                        if (esJugador1) {
+                            if (sJ1 > sJ2) {
+                                est.setSetsGanados(est.getSetsGanados() + 1);
+                                setsGanadosPartido++;
+                                System.out.println("Jugador1 ganó el set " + setNum + ": " + sJ1 + "-" + sJ2);
+                            } else {
+                                est.setSetsPerdidos(est.getSetsPerdidos() + 1);
+                                setsPerdidosPartido++;
+                                System.out.println("Jugador1 perdió el set " + setNum + ": " + sJ1 + "-" + sJ2);
+                            }
+                            est.setJuegosGanados(est.getJuegosGanados() + sJ1);
+                            est.setJuegosPerdidos(est.getJuegosPerdidos() + sJ2);
                         } else {
-                            est.setSetsPerdidos(est.getSetsPerdidos() + 1);
-                            setsPerdidosPartido++;
+                            if (sJ2 > sJ1) {
+                                est.setSetsGanados(est.getSetsGanados() + 1);
+                                setsGanadosPartido++;
+                                System.out.println("Jugador2 ganó el set " + setNum + ": " + sJ2 + "-" + sJ1);
+                            } else {
+                                est.setSetsPerdidos(est.getSetsPerdidos() + 1);
+                                setsPerdidosPartido++;
+                                System.out.println("Jugador2 perdió el set " + setNum + ": " + sJ2 + "-" + sJ1);
+                            }
+                            est.setJuegosGanados(est.getJuegosGanados() + sJ2);
+                            est.setJuegosPerdidos(est.getJuegosPerdidos() + sJ1);
                         }
-                        est.setJuegosGanados(est.getJuegosGanados() + s2j1);
-                        est.setJuegosPerdidos(est.getJuegosPerdidos() + s2j2);
-                    } else {
-                        if (s2j2 > s2j1) {
-                            est.setSetsGanados(est.getSetsGanados() + 1);
-                            setsGanadosPartido++;
-                        } else {
-                            est.setSetsPerdidos(est.getSetsPerdidos() + 1);
-                            setsPerdidosPartido++;
-                        }
-                        est.setJuegosGanados(est.getJuegosGanados() + s2j2);
-                        est.setJuegosPerdidos(est.getJuegosPerdidos() + s2j1);
-                    }
-                }
-
-                // Set3
-                Integer s3j1 = r.getSet3Jugador1Score();
-                Integer s3j2 = r.getSet3Jugador2Score();
-                if (s3j1 != null && s3j2 != null) {
-                    if (esJugador1) {
-                        if (s3j1 > s3j2) {
-                            est.setSetsGanados(est.getSetsGanados() + 1);
-                            setsGanadosPartido++;
-                        } else {
-                            est.setSetsPerdidos(est.getSetsPerdidos() + 1);
-                            setsPerdidosPartido++;
-                        }
-                        est.setJuegosGanados(est.getJuegosGanados() + s3j1);
-                        est.setJuegosPerdidos(est.getJuegosPerdidos() + s3j2);
-                    } else {
-                        if (s3j2 > s3j1) {
-                            est.setSetsGanados(est.getSetsGanados() + 1);
-                            setsGanadosPartido++;
-                        } else {
-                            est.setSetsPerdidos(est.getSetsPerdidos() + 1);
-                            setsPerdidosPartido++;
-                        }
-                        est.setJuegosGanados(est.getJuegosGanados() + s3j2);
-                        est.setJuegosPerdidos(est.getJuegosPerdidos() + s3j1);
                     }
                 }
             }
@@ -341,38 +280,15 @@ public class TorneoService {
             // Determinar si ganó el partido
             if (setsGanadosPartido > setsPerdidosPartido) {
                 est.setPartidosGanados(est.getPartidosGanados() + 1);
+                System.out.println("Jugador " + jugadorId + " ganó el partido.");
+            } else {
+                System.out.println("Jugador " + jugadorId + " perdió el partido.");
             }
         }
 
         return est;
     }
 
-    /**
-     * Método para obtener la posición final de un jugador en un torneo.
-     */
-    public int obtenerPosicionFinal(Torneo torneo, Jugador jugador) {
-        // Obtener todos los emparejamientos del torneo
-        List<Emparejamiento> emparejamientos = emparejamientoRepository.findByTorneo(torneo);
-        if (emparejamientos.isEmpty()) {
-            return 0; // Sin emparejamientos, sin posición
-        }
-
-        // Calcular la clasificación final
-        List<JugadorClasificado> clasificacion = calcularClasificacionFinal(torneo.getId(),
-                inscripcionRepository.findByTorneo(torneo).stream()
-                        .map(Inscripcion::getJugador)
-                        .collect(Collectors.toList())
-        );
-
-        // Buscar la posición del jugador
-        for (int i = 0; i < clasificacion.size(); i++) {
-            if (clasificacion.get(i).jugador.equals(jugador)) {
-                return i + 1; // Posición es índice +1
-            }
-        }
-
-        return 0; // No encontrado
-    }
 
     /**
      * Determina si el torneo está finalizado:
@@ -415,6 +331,12 @@ public class TorneoService {
         if (!todosConResultados) {
             // Aún hay emparejamientos sin resultados
             System.out.println("chequearYFinalizarTorneoSiCorresponde: Aún hay emparejamientos sin resultados en la última ronda del torneo ID " + torneoId);
+            return;
+        }
+
+        // Verificar si el torneo ya está finalizado para evitar duplicación
+        if ("Finalizado".equalsIgnoreCase(torneo.getEstadoTorneo())) {
+            System.out.println("chequearYFinalizarTorneoSiCorresponde: El torneo ID " + torneoId + " ya está finalizado.");
             return;
         }
 

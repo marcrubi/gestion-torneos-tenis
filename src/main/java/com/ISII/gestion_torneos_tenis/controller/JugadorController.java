@@ -74,7 +74,6 @@ public class JugadorController {
         return "public/register";
     }
 
-// src/main/java/com/ISII/gestion_torneos_tenis/controller/JugadorController.java
 
     @PostMapping("/jugadores/register")
     public String registrarJugador(@Valid @ModelAttribute Jugador jugador, BindingResult result, Model model) {

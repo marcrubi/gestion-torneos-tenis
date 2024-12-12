@@ -29,15 +29,9 @@ public class EmparejamientoDTO {
         return posicionRankingJugador1;
     }
 
-    public void setPosicionRankingJugador1(int posicionRankingJugador1) {
-        this.posicionRankingJugador1 = posicionRankingJugador1;
-    }
 
     public int getPosicionRankingJugador2() {
         return posicionRankingJugador2;
     }
 
-    public void setPosicionRankingJugador2(int posicionRankingJugador2) {
-        this.posicionRankingJugador2 = posicionRankingJugador2;
-    }
 }

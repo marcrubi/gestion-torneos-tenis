@@ -73,11 +73,4 @@ public class InscripcionService {
 
         return "Inscripción exitosa al torneo.";
     }
-
-
-
-
-
-
-
 }
