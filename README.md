@@ -9,6 +9,13 @@
 - **Maven**
 - **Docker**
 
+<div>
+  <img src="https://img.shields.io/badge/Java-17-red" />
+  <img src="https://img.shields.io/badge/Spring_Boot-3.1-green?logo=springboot" />
+  <img src="https://img.shields.io/badge/PostgreSQL-DBLUE?logo=postgresql" />
+  <img src="https://img.shields.io/badge/Maven-Build-orange" />
+</div>
+
 ---
 
 ## Tabla de Contenidos
