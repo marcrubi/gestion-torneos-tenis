@@ -66,7 +66,7 @@ Antes de comenzar, asegúrate de tener instalado lo siguiente en tu máquina:
 1. Crea una base de datos llamada `gestion_torneos`:
    ```sql
    CREATE DATABASE gestion_torneos;
-   CREATE USER torneo_user WITH PASSWORD '1234';
+   CREATE USER torneo_user WITH PASSWORD '<TU_PASSWORD>';
    GRANT ALL PRIVILEGES ON DATABASE gestion_torneos TO torneo_user;
 
 ### **Construir el Proyecto**
