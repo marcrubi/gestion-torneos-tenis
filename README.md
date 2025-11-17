@@ -1,6 +1,18 @@
 # Gestión de Torneos de Tenis
 
+## 🛠 Tech Stack
+
+- **Java 17**
+- **Spring Boot 3 (Web, MVC, Security, Data JPA)**
+- **PostgreSQL**
+- **Thymeleaf**
+- **Maven**
+- **Docker**
+
+---
+
 ## Tabla de Contenidos
+
 
 1. [Descripción](#descripción)
 2. [Características](#características)
