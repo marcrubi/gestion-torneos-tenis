@@ -43,4 +43,8 @@ src/main/resources/application.properties
 id_ed25519
 id_ed25519.pub
 "eval \"$(ssh-agent -s)\""
+*.log
+
 *.pub
+.idea
+.env
